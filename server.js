@@ -31,15 +31,16 @@ redisClient.on('connect', function () {
 //parseInt(string, radix);
 //get initialized with data stored inRedis before start  http://blog.semmy.me/post/19536526990/web-applications-with-express-and-nodejs
 redisClient.mget(['wins','losses'], function(err, resultsCount) {
+    console.log("redis get function run");
     if(err !== null) {
         console.log("error: " + err);
         return;
     }  
     counts.wins = parseInt(resultsCount[0],10) || 0; //resultsCount[0] is win
     counts.losses = parseInt(resultsCount[1],10) || 0;
-   
+       console.log("wins:", counts.wins);
  app.post("/flip", function (req, res) {
-    
+    console.log("post");
     //grab post obj param from req.body
     var myFlip = req.body;
     
@@ -47,13 +48,12 @@ redisClient.mget(['wins','losses'], function(err, resultsCount) {
     var randomNum = Math.floor(Math.random() * 2 );
 
     if(myFlip["call"] === coin[randomNum]) {
-        counts.wins++;
         redisClient.incr('wins');
         counts.wins = counts.wins + 1;
+        console.log("post wins", counts.wins);
         res.json({"result" : "wins"});
     }
     else {
-        counts.losses++;
         redisClient.incr('losses');
         counts.losses = counts.losses + 1;
         res.json({"result" : "lose"});
@@ -62,35 +62,20 @@ redisClient.mget(['wins','losses'], function(err, resultsCount) {
  }); // end app.post
 
 });//end redisClient.mget
-module.exports = counts.wins;
-
-/*app.post("/flip", function (req, res) {
-    
-    //grab post obj param from req.body
-    var myFlip = req.body;
-    
-    var coin = ["heads", "tails"];
-    var randomNum = Math.floor(Math.random() * 2 );
-    //var randomNum = 0;
-    if(req.body["call"] === coin[randomNum]) {
-
-        redisClient.incr();
-        counts.wins++;
-        res.json({"result" : "win"});
-    }
-    else {
-        counts.losses++;
-        res.json({"result" : "lose"});
-    }
-
-}); // end app.post
-*/
 
 
 // set up routes and response
 app.get("/stats", function (req, res) {
 	//res.send("sha's routes");
-    res.send("wins: " + counts.wins + "," + "losses: " + lcounts.losses);
+    res.send("wins: " + counts.wins + "," + "losses: " + counts.losses);
 }); //end app.get
 
-//module.exports = counts;
+
+//delete http://expressjs.com/en/starter/basic-routing.html
+app.delete('/stats', function (req, res) {
+	console.log("delete function");
+  redisClient.flushall();
+  counts.wins === 0;
+  counts.losses === 0;
+  res.send('Got a DELETE request at /stats');
+});
