@@ -1,1 +1,8 @@
+//0 test show post result:
 curl -H "Content-Type: application/json" -X POST -d "{\"call\":\"heads\"}" http://localhost:3000/flip
+
+//1. get the total results
+curl -X GET http://localhost:3000/stats
+
+//2. show delete result
+curl -X DELETE http://localhost:3000/stats

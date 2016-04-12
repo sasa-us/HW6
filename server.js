@@ -5,15 +5,7 @@ var express = require("express"),
 var redis = require("redis");
 var redisClient;
 redisClient = redis.createClient();
-var counts = {}; //empty string need use parseInt
-
-/*
-redisClient.get('count', function(err, reply) {  
-  if (err) xxx;  
-  var count = parseInt(reply);  
-  count = count + 1;  
-  redisClient.set('count', count);  
-}  */
+// ============================do not need this:var counts = {}; //empty string need use parseInt
  
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); //support json encoded body
@@ -40,7 +32,6 @@ redisClient.mget(['wins','losses'], function(err, resultsCount) {
     counts.losses = parseInt(resultsCount[1],10) || 0;
        console.log("wins:", counts.wins);
  app.post("/flip", function (req, res) {
-    console.log("post");
     //grab post obj param from req.body
     var myFlip = req.body;
     
@@ -50,7 +41,7 @@ redisClient.mget(['wins','losses'], function(err, resultsCount) {
     if(myFlip["call"] === coin[randomNum]) {
         redisClient.incr('wins');
         counts.wins = counts.wins + 1;
-        console.log("post wins", counts.wins);
+        console.log("got wins", counts.wins);
         res.json({"result" : "wins"});
     }
     else {
@@ -58,11 +49,8 @@ redisClient.mget(['wins','losses'], function(err, resultsCount) {
         counts.losses = counts.losses + 1;
         res.json({"result" : "lose"});
     }
-
  }); // end app.post
-
 });//end redisClient.mget
-
 
 // set up routes and response
 app.get("/stats", function (req, res) {
@@ -71,11 +59,12 @@ app.get("/stats", function (req, res) {
 }); //end app.get
 
 
-//delete http://expressjs.com/en/starter/basic-routing.html
-app.delete('/stats', function (req, res) {
-	console.log("delete function");
+//delete (to show the delete result use CMD: curl -X DELETE http://localhost:3000/stats)
+//http://expressjs.com/en/starter/basic-routing.html
+app.delete("/stats", function (req, res) {
+  console.log("delete");
   redisClient.flushall();
-  counts.wins === 0;
-  counts.losses === 0;
-  res.send('Got a DELETE request at /stats');
+  counts.wins = 0;
+  counts.losses = 0;
+  res.send("Got a DELETE request at /stats");
 });
